@@ -114,16 +114,16 @@ dmypy.json
 .pyre/
 
 # Machine Learning / Data Science
-# Model files
-*.h5
-*.keras
-*.pkl
-*.pickle
-model.h5
-model.keras
-label.pkl
-onehot.pkl
-scaler.pkl
+# Model files - COMMENTED OUT TO INCLUDE SMALL MODELS
+# *.h5
+# *.keras
+# *.pkl
+# *.pickle
+# model.h5
+# model.keras
+# label.pkl
+# onehot.pkl
+# scaler.pkl
 
 # Logs
 logs/
