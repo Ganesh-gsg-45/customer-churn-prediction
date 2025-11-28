@@ -1,16 +1,53 @@
 import streamlit as st 
 import pickle
-import tensorflow as tf
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+try:
+    import tensorflow as tf
+    TF_AVAILABLE = True
+except (ImportError, AttributeError):
+    TF_AVAILABLE = False
+    st.warning("TensorFlow not available. Using fallback model loading.")
+
 from sklearn.preprocessing import StandardScaler,LabelEncoder,OneHotEncoder
 import pandas as pd
 import numpy as np
-model=tf.keras.models.load_model('model.h5')
-with open('label.pkl','rb') as f:
-    label_encoder=pickle.load(f)
-with open('onehot.pkl','rb') as f:
-    one_hot=pickle.load(f)
-with open('scaler.pkl','rb') as f:
-    scale_encode=pickle.load(f)
+
+@st.cache_resource
+def load_model():
+    try:
+        if TF_AVAILABLE:
+            if os.path.exists('model.h5'):
+                return tf.keras.models.load_model('model.h5')
+            elif os.path.exists('model.keras'):
+                return tf.keras.models.load_model('model.keras')
+        # Fallback: load as pickle if h5 isn't available
+        if os.path.exists('model.pkl'):
+            with open('model.pkl', 'rb') as f:
+                return pickle.load(f)
+        st.error("Model file not found! (Tried: model.h5, model.keras, model.pkl)")
+        st.stop()
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        st.stop()
+
+@st.cache_resource
+def load_encoders():
+    try:
+        with open('label.pkl','rb') as f:
+            label_encoder=pickle.load(f)
+        with open('onehot.pkl','rb') as f:
+            one_hot=pickle.load(f)
+        with open('scaler.pkl','rb') as f:
+            scale_encode=pickle.load(f)
+        return label_encoder, one_hot, scale_encode
+    except Exception as e:
+        st.error(f"Error loading encoders: {e}")
+        st.stop()
+
+model = load_model()
+label_encoder, one_hot, scale_encode = load_encoders()
 st.title("customer churn pridiction")
 geography=st.selectbox('Geography',one_hot.categories_[0])
 gender=st.selectbox('Gender',label_encoder.classes_)
